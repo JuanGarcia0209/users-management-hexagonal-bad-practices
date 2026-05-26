@@ -75,12 +75,13 @@ public final class LoginService implements LoginUseCase {
   }
 
   private void ensureUserIsActive(final UserModel user) {
-    if (user.getStatus() != UserStatus.ACTIVE
-        || user.getStatus() == UserStatus.BLOCKED
-        || user.getStatus() == UserStatus.INACTIVE
-        || user.getStatus() == UserStatus.PENDING) {
+    if (!isAllowedToLogin(user)) {
       throw InvalidCredentialsException.becauseUserIsNotActive();
     }
+  }
+
+  private boolean isAllowedToLogin(final UserModel user) {
+    return user.getStatus() == UserStatus.ACTIVE;
   }
 
   private void validateCommand(final LoginCommand command) {
