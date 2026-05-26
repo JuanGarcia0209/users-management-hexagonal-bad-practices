@@ -43,40 +43,64 @@ public final class CreateUserService implements CreateUserUseCase {
     // Clean Code - Regla 9: se usa comentario para tapar un bloque poco expresivo.
     // La regla dice: antes de comentar, intenta mejorar nombres y extraer funciones.
     // validar campos del command
-    final Set<ConstraintViolation<CreateUserCommand>> violations = validator.validate(command);
-    if (!violations.isEmpty()) {
-      throw new ConstraintViolationException(violations);
-    }
+    validateCommand(command);
 
-    log.info("Creando usuario con email=" + command.email() + ", nombre=" + command.name());
+    logCreation(command);
 
     // Clean Code - Regla 10: comentario redundante — el código siguiente ya dice lo mismo.
     // verificar si el email ya existe en la base de datos
-    final UserEmail email = new UserEmail(command.email());
-    if (getUserByEmailPort.getByEmail(email).isPresent()) {
-      throw UserAlreadyExistsException.becauseEmailAlreadyExists(email.value());
-    }
+    ensureEmailDoesNotExist(command);
 
     // Clean Code - Regla 3: aquí se mezcla lógica de negocio de alto nivel (crear usuario)
     // con detalles de construcción de bajo nivel (new UserId, new UserName, etc.).
     // Estos detalles deberían estar encapsulados en el mapper o en una fábrica.
-    final UserModel userToSave = new UserModel(
+    final UserModel userToSave = buildUserToSave(command);
+
+    // Clean Code - Regla 10: comentario que explica lo obvio — no aporta valor.
+    // guardar el usuario en la base de datos
+    final UserModel savedUser = saveUser(userToSave);
+
+    // Clean Code - Regla 10: otro comentario redundante.
+    // enviar notificacion de bienvenida al usuario creado
+    notifyUserCreated(savedUser, command.password());
+
+    // retornar el usuario guardado
+    return savedUser;
+  }
+
+  private void validateCommand(final CreateUserCommand command) {
+    final Set<ConstraintViolation<CreateUserCommand>> violations = validator.validate(command);
+    if (!violations.isEmpty()) {
+      throw new ConstraintViolationException(violations);
+    }
+  }
+
+  private void logCreation(final CreateUserCommand command) {
+    log.info("Creando usuario con email=" + command.email() + ", nombre=" + command.name());
+  }
+
+  private void ensureEmailDoesNotExist(final CreateUserCommand command) {
+    final UserEmail email = new UserEmail(command.email());
+    if (getUserByEmailPort.getByEmail(email).isPresent()) {
+      throw UserAlreadyExistsException.becauseEmailAlreadyExists(email.value());
+    }
+  }
+
+  private UserModel buildUserToSave(final CreateUserCommand command) {
+    return new UserModel(
         new UserId(command.id()),
         new UserName(command.name()),
         new UserEmail(command.email()),
         UserPassword.fromPlainText(command.password()),
         UserRole.fromString(command.role()),
         UserStatus.PENDING);
+  }
 
-    // Clean Code - Regla 10: comentario que explica lo obvio — no aporta valor.
-    // guardar el usuario en la base de datos
-    final UserModel savedUser = saveUserPort.save(userToSave);
+  private UserModel saveUser(final UserModel userToSave) {
+    return saveUserPort.save(userToSave);
+  }
 
-    // Clean Code - Regla 10: otro comentario redundante.
-    // enviar notificacion de bienvenida al usuario creado
-    emailNotificationService.notifyUserCreated(savedUser, command.password());
-
-    // retornar el usuario guardado
-    return savedUser;
+  private void notifyUserCreated(final UserModel savedUser, final String plainPassword) {
+    emailNotificationService.notifyUserCreated(savedUser, plainPassword);
   }
 }
