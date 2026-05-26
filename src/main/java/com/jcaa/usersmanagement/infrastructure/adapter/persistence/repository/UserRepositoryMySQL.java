@@ -95,22 +95,29 @@ public final class UserRepositoryMySQL
   // cada campo como parámetro primitivo separado en vez de encapsularlos en un objeto.
   // La regla dice: si una función necesita muchos datos relacionados, encapsúlalos en un objeto.
   // createUser(String name, String email, ...) es señal clara de diseño mejorable.
-  public UserModel saveWithFields(
-      final String id,
-      final String name,
-      final String email,
-      final String password,
-      final String role,
-      final String status) {
+  public UserModel saveWithFields(final SaveWithFieldsRequest request) {
     // Clean Code - Regla 10: comentario redundante — la línea siguiente ya es clara.
     // verificar que todos los parámetros tengan valor
-    if (id == null || name == null || email == null || password == null || role == null || status == null) {
+    if (request.id() == null
+        || request.name() == null
+        || request.email() == null
+        || request.password() == null
+        || request.role() == null
+        || request.status() == null) {
       throw new IllegalArgumentException("Todos los campos son obligatorios");
     }
     // Clean Code - Regla 10: otro comentario redundante.
     // construir y guardar el modelo
     throw new UnsupportedOperationException("Usar save(UserModel) en su lugar.");
   }
+
+  public record SaveWithFieldsRequest(
+      String id,
+      String name,
+      String email,
+      String password,
+      String role,
+      String status) {}
 
   @Override
   public UserModel update(final UserModel user) {
