@@ -25,39 +25,26 @@ public final class LoginService implements LoginUseCase {
     validateCommand(command);
 
     final UserEmail email = new UserEmail(command.email());
-
-    // Clean Code - Regla 8: violación CQS — el método se llama "getAndValidateUser"
-    // pero además de consultar, tiene efectos secundarios (logs internos, acumula estado implícito).
-    // Un método que consulta información no debe modificar estado.
-    final UserModel user = getAndValidateUser(email, command.password());
-
-    return user;
-  }
-
-  // Clean Code - Regla 8: viola CQS — consulta Y tiene efectos de modificación implícitos.
-  // Clean Code - Regla 1: hace demasiadas cosas: busca usuario, verifica contraseña y valida estado.
-  // Clean Code - Regla 2 (funciones cortas): este método creció hasta convertirse en una mini-clase.
-  //   Hace fetch → null-check → password-verify → status-check → return; son 4 responsabilidades.
-  //   Si exige demasiado análisis para entenderse, debe dividirse.
-  // Clean Code - Regla 14 (Ley de Deméter): se navega a internals del objeto:
-  //   user → getPassword() → verifyPlain() en lugar de delegar con user.passwordMatches(plain).
-  private UserModel getAndValidateUser(final UserEmail email, final String plainPassword) {
+    // Clean Code - Regla 8: violación CQS — este método mezclaba consulta y comandos.
+    // Separar la consulta (obtener el usuario) de las validaciones/efectos (verificar contraseña,
+    // comprobar estado) mejora la claridad y respeta CQS. Aquí hacemos la consulta primero
+    // y luego ejecutamos las validaciones como operaciones "command" que pueden lanzar
+    // excepciones sin ocultar efectos.
     final UserModel user = findUserOrThrowInvalidCredentials(email);
 
-    // Clean Code - Regla 14: acceso profundo a internals del value object.
-    verifyPasswordOrThrowInvalidCredentials(user, plainPassword);
-
-    // Clean Code - Regla 12 (alta cohesión): lógica de dominio sobre estados válidos
-    // dispersa en la capa de aplicación — debería encapsularse en UserModel o un servicio de dominio.
-    // Clean Code - Regla 17: condición booleana compleja y difícil de leer.
-    // La regla dice: extraer condiciones complejas a métodos con nombre significativo.
-    // Esta expresión equivale a "user.getStatus() != ACTIVE" pero está escrita de forma
-    // redundante e innecesariamente larga — el lector debe analizar cada rama para
-    // deducir la intención central. Debería ser: if (!user.isAllowedToLogin()).
+    // Validaciones separadas: comandos que no devuelven datos, sólo lanzan en caso de fallo.
+    verifyPasswordOrThrowInvalidCredentials(user, command.password());
     ensureUserIsActive(user);
 
     return user;
   }
+
+  // Nota: la implementación anterior contenía el método getAndValidateUser que mezclaba
+  // consulta y comandos. Para preservar los comentarios originales y dejar claro el
+  // razonamiento, las validaciones ahora se realizan en métodos separados:
+  // - findUserOrThrowInvalidCredentials()  -> consulta (query)
+  // - verifyPasswordOrThrowInvalidCredentials() -> comando (puede lanzar)
+  // - ensureUserIsActive() -> comando (puede lanzar)
 
   private UserModel findUserOrThrowInvalidCredentials(final UserEmail email) {
     final UserModel user = getUserByEmailPort.getByEmail(email).orElse(null);
