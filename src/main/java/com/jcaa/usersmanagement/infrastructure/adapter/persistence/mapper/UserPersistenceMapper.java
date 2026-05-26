@@ -57,6 +57,15 @@ public class UserPersistenceMapper {
         resultSet.getString("updated_at"));
   }
 
+  /**
+   * Map the current row of the provided {@link ResultSet} to a {@link UserEntity}.
+   * <p>
+   * Important: this method DOES NOT call {@code resultSet.next()}; the caller must
+   * position the cursor on the desired row before invoking. The method only reads
+   * columns from the current row and does not advance or otherwise mutate the
+   * {@link ResultSet} beyond reading the current row.
+   */
+
   public UserModel fromEntityToModel(final UserEntity entity) {
     return new UserModel(
         new UserId(entity.id()),
@@ -67,10 +76,26 @@ public class UserPersistenceMapper {
         UserStatus.fromString(entity.status()));
   }
 
+  /**
+   * Map the current row of the provided {@link ResultSet} to a {@link UserModel}.
+   * <p>
+   * Important: this method DOES NOT call {@code resultSet.next()}; it expects the
+   * caller to have positioned the cursor on the row to map. Use
+   * {@link #fromResultSetToModelList(ResultSet)} when you want to iterate over all
+   * remaining rows in the {@link ResultSet}.
+   */
   public UserModel fromResultSetToModel(final ResultSet resultSet) throws SQLException {
     return fromEntityToModel(fromResultSetToEntity(resultSet));
   }
 
+  /**
+   * Iterate over the provided {@link ResultSet} starting from its current cursor
+   * position and map each row to a {@link UserModel}.
+   * <p>
+   * This method WILL call {@code resultSet.next()} and therefore advances the
+   * cursor as it consumes rows. Callers should be aware that after invocation the
+   * cursor will be positioned after the last consumed row.
+   */
   public List<UserModel> fromResultSetToModelList(final ResultSet resultSet) throws SQLException {
     final List<UserModel> users = new ArrayList<>();
     while (resultSet.next()) {
