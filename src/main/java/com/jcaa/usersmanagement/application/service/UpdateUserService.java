@@ -40,19 +40,29 @@ public final class UpdateUserService implements UpdateUserUseCase {
 
     log.info("Actualizando usuario id=" + command.id() + ", email=" + command.email() + ", nombre=" + command.name());
 
+    // Separación CQS (comando vs consulta): extraemos la operación de actualización
+    // a un método privado que ejecuta el comando (performUpdate). Después realizamos
+    // una consulta explícita para obtener y devolver el usuario actualizado.
     final UserId userId = new UserId(command.id());
     final UserModel current = findExistingUserOrFail(userId);
     final UserEmail newEmail = new UserEmail(command.email());
 
     ensureEmailIsNotTakenByAnotherUser(newEmail, userId);
 
+    performUpdate(command, current);
+
+    // Consulta explícita: obtener el usuario actualizado tras el comando.
+    final UserModel updatedUser = findExistingUserOrFail(userId);
+
+    return updatedUser;
+  }
+
+  private void performUpdate(final UpdateUserCommand command, final UserModel current) {
     final UserModel userToUpdate =
         UserApplicationMapper.fromUpdateCommandToModel(command, current.getPassword());
     final UserModel updatedUser = updateUserPort.update(userToUpdate);
 
     emailNotificationService.notifyUserUpdated(updatedUser);
-
-    return updatedUser;
   }
 
   private void validateCommand(final UpdateUserCommand command) {
