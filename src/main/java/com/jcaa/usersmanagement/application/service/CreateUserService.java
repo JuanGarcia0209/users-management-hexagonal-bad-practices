@@ -52,12 +52,8 @@ public final class CreateUserService implements CreateUserUseCase {
 
     logCreation(command);
 
-    // Clean Code - Regla 10: comentario redundante — el código siguiente ya dice lo mismo.
-    // verificar si el email ya existe en la base de datos
     final UserModel savedUser = createAndSaveUser(command);
 
-    // Clean Code - Regla 10: otro comentario redundante.
-    // enviar notificacion de bienvenida al usuario creado
     notifyUserCreated(savedUser, command.password());
 
     // retornar el usuario guardado
