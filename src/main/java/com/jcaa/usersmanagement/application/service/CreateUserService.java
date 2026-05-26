@@ -48,7 +48,7 @@ public final class CreateUserService implements CreateUserUseCase {
     // Clean Code - Regla 9: se usa comentario para tapar un bloque poco expresivo.
     // La regla dice: antes de comentar, intenta mejorar nombres y extraer funciones.
     // validar campos del command
-    validateCommand(command);
+    validateCreateCommand(command);
 
     logCreation(command);
 
@@ -70,7 +70,7 @@ public final class CreateUserService implements CreateUserUseCase {
     return saveUser(userToSave);
   }
 
-  private void validateCommand(final CreateUserCommand command) {
+  private void validateCreateCommand(final CreateUserCommand command) {
     final Set<ConstraintViolation<CreateUserCommand>> violations = validator.validate(command);
     if (!violations.isEmpty()) {
       throw new ConstraintViolationException(violations);
