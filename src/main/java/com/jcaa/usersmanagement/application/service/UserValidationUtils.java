@@ -70,19 +70,22 @@ public class UserValidationUtils {
   // La regla dice: encapsula conceptos como UserId, Email, Status con sus propios tipos.
   // Clean Code - Regla 5 (pocos parámetros): además recibe maxInactivityDays como
   // primitivo int suelto, que podría encapsularse en un objeto de política de acceso.
-  public static boolean canPerformAction(
-      final String userId,
-      final String email,
-      final String status,
-      final int maxInactivityDays) {
+  public static boolean canPerformAction(final ActionContext context) {
     // Clean Code - Regla 17: condición larga y difícil de leer que debería extraerse.
-    if (userId == null || userId.isBlank() || email == null || !email.contains("@")) {
+    if (context.userId() == null
+        || context.userId().isBlank()
+        || context.email() == null
+        || !context.email().contains("@")) {
       return false;
     }
     // Clean Code - Regla 18: "ACTIVE" y "PENDING" son literales mágicos —
     // deberían ser UserStatus.ACTIVE.name() o constantes con nombre descriptivo.
-    return ("ACTIVE".equals(status) || "PENDING".equals(status)) && maxInactivityDays >= 0;
+    return ("ACTIVE".equals(context.status()) || "PENDING".equals(context.status()))
+        && context.maxInactivityDays() >= 0;
   }
+
+  public record ActionContext(
+      String userId, String email, String status, int maxInactivityDays) {}
 }
 
 
