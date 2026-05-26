@@ -56,7 +56,7 @@ public final class EmailNotificationService {
         TOKEN_ROLE,
         user.getRole().name()));
     final EmailDestinationModel destination = buildDestination(user, SUBJECT_CREATED, body);
-    sendOrLog(destination);
+    send(destination);
   }
 
   public void notifyUserUpdated(final UserModel user) {
@@ -77,7 +77,7 @@ public final class EmailNotificationService {
         TOKEN_STATUS,
         user.getStatus().name()));
     final EmailDestinationModel destination = buildDestination(user, SUBJECT_UPDATED, body);
-    sendOrLog(destination);
+    send(destination);
   }
 
   private static EmailDestinationModel buildDestination(
@@ -115,22 +115,11 @@ public final class EmailNotificationService {
   }
 
   // Clean Code - Regla 7 (evitar efectos secundarios ocultos):
-  // El nombre "sendOrLog" promete dos cosas (enviar o loguear), pero ninguna de las
-  // dos describe el comportamiento real completo: en el flujo exitoso NO loguea nada,
-  // y en el fallido loguea Y re-lanza la excepción.
-  // Los llamadores (notifyUserCreated, notifyUserUpdated) creen que solo "envían un correo",
-  // pero en realidad también producen un log de advertencia de forma inesperada.
-  // La regla dice: una función no debe realizar acciones inesperadas además de lo que
-  // su nombre promete.
-  private void sendOrLog(final EmailDestinationModel destination) {
-    try {
-      emailSenderPort.send(destination);
-    } catch (final EmailSenderException senderException) {
-      log.log(
-          Level.WARNING,
-          "[EmailNotificationService] No se pudo enviar correo a: {0}. Causa: {1}",
-          new Object[] {destination.getDestinationEmail(), senderException.getMessage()});
-      throw senderException;
-    }
+  // Este método era `sendOrLog` y realizaba un logging inesperado además de propagar
+  // la excepción. Para evitar efectos secundarios ocultos mantendremos la responsabilidad
+  // única: enviar el correo. El manejo de errores (log, reintentos, compensaciones) debe
+  // ser explícito en el llamador o en un componente dedicado.
+  private void send(final EmailDestinationModel destination) {
+    emailSenderPort.send(destination);
   }
 }
