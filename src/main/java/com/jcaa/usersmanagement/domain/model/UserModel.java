@@ -8,7 +8,8 @@ import com.jcaa.usersmanagement.domain.valueobject.UserName;
 import com.jcaa.usersmanagement.domain.valueobject.UserPassword;
 // VIOLACIÓN Regla 9 (Hexagonal): el dominio importa una clase de infraestructura.
 // Las dependencias siempre deben ir hacia el centro — nunca desde el dominio hacia afuera.
-import com.jcaa.usersmanagement.infrastructure.adapter.persistence.entity.UserEntity;
+// El mapeo a entidades de persistencia no pertenece al dominio.
+// Use el mapper en la capa de infraestructura: UserPersistenceMapper.
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -49,16 +50,6 @@ public class UserModel {
   }
 
   // VIOLACIÓN Regla 9 (Hexagonal): método de conversión a entidad de infraestructura dentro del dominio.
-  // El dominio NO debe saber nada sobre cómo se persisten sus datos.
-  public UserEntity toEntity() {
-    return new UserEntity(
-        id.value(),
-        name.value(),
-        email.value(),
-        password.value(),
-        role.name(),
-        status.name(),
-        null,
-        null);
-  }
+  // El dominio NO debe saber nada sobre cómo se persisten sus datos. El mapeo debe realizarse
+  // desde la capa de infraestructura (por ejemplo, UserPersistenceMapper).
 }
