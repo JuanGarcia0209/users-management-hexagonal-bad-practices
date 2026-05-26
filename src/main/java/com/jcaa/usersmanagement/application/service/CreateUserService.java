@@ -40,6 +40,11 @@ public final class CreateUserService implements CreateUserUseCase {
     // Tiene demasiadas responsabilidades y mezcla niveles de abstracción (reglas de negocio
     // junto con detalles de formateo de strings y construcción manual de objetos de dominio).
 
+    // Actúa como orquestador de alto nivel; la implementación detalla está en performCreate().
+    return performCreate(command);
+  }
+
+  private UserModel performCreate(final CreateUserCommand command) {
     // Clean Code - Regla 9: se usa comentario para tapar un bloque poco expresivo.
     // La regla dice: antes de comentar, intenta mejorar nombres y extraer funciones.
     // validar campos del command
