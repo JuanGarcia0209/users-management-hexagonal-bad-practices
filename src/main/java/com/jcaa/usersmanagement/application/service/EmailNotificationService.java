@@ -43,10 +43,20 @@ public final class EmailNotificationService {
     // con detalles técnicos de I/O, parseo o formateo de texto.
     // Clean Code - Regla 11 (evitar duplicación): la construcción de tokens del mapa
     // es idéntica a la de notifyUserUpdated — debería centralizarse.
-    sendOrLog(buildDestination(user, SUBJECT_CREATED,
-        renderTemplate(loadTemplate("user-created.html"),
-            Map.of(TOKEN_NAME, user.getName().value(), TOKEN_EMAIL, user.getEmail().value(),
-                TOKEN_PASSWORD, plainPassword, TOKEN_ROLE, user.getRole().name()))));
+    final String template = loadTemplate("user-created.html");
+    final String body = renderTemplate(
+      template,
+      Map.of(
+        TOKEN_NAME,
+        user.getName().value(),
+        TOKEN_EMAIL,
+        user.getEmail().value(),
+        TOKEN_PASSWORD,
+        plainPassword,
+        TOKEN_ROLE,
+        user.getRole().name()));
+    final EmailDestinationModel destination = buildDestination(user, SUBJECT_CREATED, body);
+    sendOrLog(destination);
   }
 
   public void notifyUserUpdated(final UserModel user) {
@@ -54,10 +64,20 @@ public final class EmailNotificationService {
     // loadTemplate → renderTemplate → buildDestination → sendOrLog.
     // Esta lógica de orquestación debería extraerse a un método genérico privado.
     // Clean Code - Regla 25 y 26: misma sobrecompactación que arriba.
-    sendOrLog(buildDestination(user, SUBJECT_UPDATED,
-        renderTemplate(loadTemplate("user-updated.html"),
-            Map.of(TOKEN_NAME, user.getName().value(), TOKEN_EMAIL, user.getEmail().value(),
-                TOKEN_ROLE, user.getRole().name(), TOKEN_STATUS, user.getStatus().name()))));
+    final String template = loadTemplate("user-updated.html");
+    final String body = renderTemplate(
+      template,
+      Map.of(
+        TOKEN_NAME,
+        user.getName().value(),
+        TOKEN_EMAIL,
+        user.getEmail().value(),
+        TOKEN_ROLE,
+        user.getRole().name(),
+        TOKEN_STATUS,
+        user.getStatus().name()));
+    final EmailDestinationModel destination = buildDestination(user, SUBJECT_UPDATED, body);
+    sendOrLog(destination);
   }
 
   // Clean Code - Regla 6 (evitar parámetros booleanos de control):
