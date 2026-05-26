@@ -104,11 +104,11 @@ public final class UserRepositoryMySQL
         || request.password() == null
         || request.role() == null
         || request.status() == null) {
-      throw new IllegalArgumentException("Todos los campos son obligatorios");
+      throw new IllegalArgumentException(ALL_FIELDS_REQUIRED_MESSAGE);
     }
     // Clean Code - Regla 10: otro comentario redundante.
     // construir y guardar el modelo
-    throw new UnsupportedOperationException("Usar save(UserModel) en su lugar.");
+    throw new UnsupportedOperationException(USE_SAVE_INSTEAD_MESSAGE);
   }
 
   public record SaveWithFieldsRequest(
