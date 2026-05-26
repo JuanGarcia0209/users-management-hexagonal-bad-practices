@@ -33,9 +33,28 @@ public final class Main {
   //   buildContainer(), buildConsole(), buildCli(), run().
   public static void main(final String[] args) {
     log.info("Starting Users Management System...");
-    final DependencyContainer container = new DependencyContainer();
+    final DependencyContainer container = buildContainer();
     try (final Scanner scanner = new Scanner(System.in)) {
-      new UserManagementCli(container.userController(), new ConsoleIO(scanner, System.out)).start();
+      final ConsoleIO console = buildConsole(scanner);
+      final UserManagementCli cli = buildCli(container, console);
+      run(cli);
     }
+  }
+
+  private static DependencyContainer buildContainer() {
+    return new DependencyContainer();
+  }
+
+  private static ConsoleIO buildConsole(final Scanner scanner) {
+    return new ConsoleIO(scanner, System.out);
+  }
+
+  private static UserManagementCli buildCli(
+      final DependencyContainer container, final ConsoleIO console) {
+    return new UserManagementCli(container.userController(), console);
+  }
+
+  private static void run(final UserManagementCli cli) {
+    cli.start();
   }
 }
