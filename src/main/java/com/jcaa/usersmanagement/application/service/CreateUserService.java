@@ -49,16 +49,7 @@ public final class CreateUserService implements CreateUserUseCase {
 
     // Clean Code - Regla 10: comentario redundante — el código siguiente ya dice lo mismo.
     // verificar si el email ya existe en la base de datos
-    ensureEmailDoesNotExist(command);
-
-    // Clean Code - Regla 3: aquí se mezcla lógica de negocio de alto nivel (crear usuario)
-    // con detalles de construcción de bajo nivel (new UserId, new UserName, etc.).
-    // Estos detalles deberían estar encapsulados en el mapper o en una fábrica.
-    final UserModel userToSave = buildUserToSave(command);
-
-    // Clean Code - Regla 10: comentario que explica lo obvio — no aporta valor.
-    // guardar el usuario en la base de datos
-    final UserModel savedUser = saveUser(userToSave);
+    final UserModel savedUser = createAndSaveUser(command);
 
     // Clean Code - Regla 10: otro comentario redundante.
     // enviar notificacion de bienvenida al usuario creado
@@ -66,6 +57,12 @@ public final class CreateUserService implements CreateUserUseCase {
 
     // retornar el usuario guardado
     return savedUser;
+  }
+
+  private UserModel createAndSaveUser(final CreateUserCommand command) {
+    ensureEmailDoesNotExist(command);
+    final UserModel userToSave = buildUserToSave(command);
+    return saveUser(userToSave);
   }
 
   private void validateCommand(final CreateUserCommand command) {
