@@ -11,15 +11,20 @@ public class EmailDestinationModel {
   String subject;
   String body;
 
+  private static final String DEST_EMAIL_REQUIRED = "El email del destinatario es requerido.";
+  private static final String DEST_NAME_REQUIRED = "El nombre del destinatario es requerido.";
+  private static final String SUBJECT_REQUIRED = "El asunto es requerido.";
+  private static final String BODY_REQUIRED = "El cuerpo del mensaje es requerido.";
+
   public EmailDestinationModel(
       final String destinationEmail,
       final String destinationName,
       final String subject,
       final String body) {
-    this.destinationEmail = validateNotBlank(destinationEmail, "El email del destinatario es requerido.");
-    this.destinationName  = validateNotBlank(destinationName,  "El nombre del destinatario es requerido.");
-    this.subject          = validateNotBlank(subject,          "El asunto es requerido.");
-    this.body             = validateNotBlank(body,             "El cuerpo del mensaje es requerido.");
+    this.destinationEmail = validateNotBlank(destinationEmail, DEST_EMAIL_REQUIRED);
+    this.destinationName  = validateNotBlank(destinationName,  DEST_NAME_REQUIRED);
+    this.subject          = validateNotBlank(subject,          SUBJECT_REQUIRED);
+    this.body             = validateNotBlank(body,             BODY_REQUIRED);
   }
 
   private static String validateNotBlank(final String value, final String errorMessage) {
