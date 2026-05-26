@@ -6,14 +6,14 @@ public final class InvalidCredentialsException extends DomainException {
     super(message);
   }
 
+  private static final String CREDENTIALS_INVALID_MESSAGE = "Correo o contraseña incorrectos.";
+  private static final String USER_NOT_ACTIVE_MESSAGE = "Tu cuenta no está activa. Contacta al administrador.";
+
   public static InvalidCredentialsException becauseCredentialsAreInvalid() {
-    // VIOLACIÓN Regla 10: texto de error hardcodeado directamente.
-    // Debe usarse una constante con nombre descriptivo en lugar de un String literal.
-    return new InvalidCredentialsException("Correo o contraseña incorrectos.");
+    return new InvalidCredentialsException(CREDENTIALS_INVALID_MESSAGE);
   }
 
   public static InvalidCredentialsException becauseUserIsNotActive() {
-    // VIOLACIÓN Regla 10: texto de error hardcodeado directamente.
-    return new InvalidCredentialsException("Tu cuenta no está activa. Contacta al administrador.");
+    return new InvalidCredentialsException(USER_NOT_ACTIVE_MESSAGE);
   }
 }
